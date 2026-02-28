@@ -117,7 +117,10 @@ with st.sidebar:
     # ── API Status ──
     try:
         health = requests.get(f"{API_BASE}/health", timeout=3)
-        st.success("🟢 Backend connected") if health.status_code == 200 else st.error("🔴 Backend error")
+        if health.status_code == 200:
+            st.success("🟢 Backend connected")
+        else:
+            st.error("🔴 Backend error")
     except requests.ConnectionError:
         st.error("🔴 Backend not running")
 
