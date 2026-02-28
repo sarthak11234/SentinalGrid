@@ -7,9 +7,13 @@ import streamlit as st
 import requests
 import pandas as pd
 import json
+<<<<<<< HEAD
 import base64
 from urllib.parse import parse_qs
 from streamlit_cookies_controller import CookieController
+=======
+from urllib.parse import parse_qs
+>>>>>>> 67cfd7af8a57913b398a9397db516ec204e84fab
 
 # ── Config ──
 API_BASE = "http://localhost:8000"
@@ -21,8 +25,11 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+<<<<<<< HEAD
 cookie_controller = CookieController()
 
+=======
+>>>>>>> 67cfd7af8a57913b398a9397db516ec204e84fab
 # ── Custom CSS ──
 st.markdown("""
 <style>
@@ -60,6 +67,7 @@ st.markdown("""
 # ══════════════════════════════════════════════
 
 def _check_login():
+<<<<<<< HEAD
     """Check for token in URL query params or browser cookies."""
     params = st.query_params
     token = params.get("token", None)
@@ -77,6 +85,16 @@ def _check_login():
     if token:
         try:
             # Decode the token payload (base64 part before the signature)
+=======
+    """Check for token in URL query params (returned from Google OAuth callback)."""
+    params = st.query_params
+    token = params.get("token", None)
+    if token:
+        # Verify the token with the backend
+        try:
+            # Decode the token payload (base64 part before the signature)
+            import base64
+>>>>>>> 67cfd7af8a57913b398a9397db516ec204e84fab
             data_part = token.rsplit(".", 1)[0]
             # Add padding if needed
             padding = 4 - len(data_part) % 4
@@ -85,6 +103,11 @@ def _check_login():
             payload = json.loads(base64.urlsafe_b64decode(data_part))
             st.session_state["user"] = payload
             st.session_state["token"] = token
+<<<<<<< HEAD
+=======
+            # Clear the URL params
+            st.query_params.clear()
+>>>>>>> 67cfd7af8a57913b398a9397db516ec204e84fab
         except Exception:
             pass
 
@@ -92,10 +115,16 @@ def _check_login():
 
 
 def _logout():
+<<<<<<< HEAD
     """Clear session state and cookies."""
     for key in ["user", "token"]:
         st.session_state.pop(key, None)
     cookie_controller.remove("token")
+=======
+    """Clear session state."""
+    for key in ["user", "token"]:
+        st.session_state.pop(key, None)
+>>>>>>> 67cfd7af8a57913b398a9397db516ec204e84fab
     st.rerun()
 
 
