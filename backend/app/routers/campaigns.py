@@ -87,9 +87,15 @@ async def create_campaign(
     for idx, row in df.iterrows():
         row_dict = row.where(pd.notna(row), None).to_dict()
 
+        # Convert numpy types to native Python types (SQLite JSON can't serialize numpy)
+        row_dict = {
+            k: (v.item() if hasattr(v, 'item') else v)
+            for k, v in row_dict.items()
+        }
+
         # Determine channel and contact info
         contact_email = str(row_dict.get(email_col, "")) if email_col else None
-        contact_phone = str(row_dict.get(phone_col, "")) if phone_col else None
+        contact_phone = str(int(row_dict.get(phone_col, ""))) if phone_col and row_dict.get(phone_col) is not None else None
 
         # Prefer WhatsApp if phone is available, otherwise email
         if contact_phone and contact_phone.strip():

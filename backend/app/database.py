@@ -31,7 +31,27 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
 def create_tables():
-    """Create all tables (safe to call repeatedly)."""
+    """Create all tables. If schema has changed, drop and recreate (prototype only)."""
+    from sqlalchemy import inspect
+
+    inspector = inspect(engine)
+    existing_tables = inspector.get_table_names()
+
+    # Check if schema is outdated by comparing columns
+    needs_recreate = False
+    for table_name, table in Base.metadata.tables.items():
+        if table_name in existing_tables:
+            existing_cols = {c["name"] for c in inspector.get_columns(table_name)}
+            model_cols = {c.name for c in table.columns}
+            if not model_cols.issubset(existing_cols):
+                needs_recreate = True
+                print(f"[DB] Schema change detected in '{table_name}': missing {model_cols - existing_cols}")
+                break
+
+    if needs_recreate:
+        print("[DB] Dropping all tables and recreating...")
+        Base.metadata.drop_all(bind=engine)
+
     Base.metadata.create_all(bind=engine)
 
 

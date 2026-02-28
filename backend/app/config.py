@@ -46,7 +46,7 @@ class Settings(BaseSettings):
     confidence_threshold: float = 0.7
 
     model_config = {
-        "env_file": ".env",
+        "env_file": (".env", "../.env"),
         "env_file_encoding": "utf-8",
         "extra": "ignore",
     }
