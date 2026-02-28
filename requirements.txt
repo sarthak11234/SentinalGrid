@@ -1,0 +1,5 @@
+streamlit
+requests
+pandas
+langchain_google_genai
+aiosmtplib
