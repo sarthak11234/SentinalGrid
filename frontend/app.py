@@ -7,13 +7,9 @@ import streamlit as st
 import requests
 import pandas as pd
 import json
-<<<<<<< HEAD
 import base64
 from urllib.parse import parse_qs
 from streamlit_cookies_controller import CookieController
-=======
-from urllib.parse import parse_qs
->>>>>>> 67cfd7af8a57913b398a9397db516ec204e84fab
 
 # ── Config ──
 API_BASE = "http://localhost:8000"
@@ -25,26 +21,36 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-<<<<<<< HEAD
+if "theme" not in st.session_state:
+    st.session_state.theme = "light"
+
 cookie_controller = CookieController()
 
-<<<<<<< HEAD
 # ══════════════════════════════════════════════
 # CUSTOM CSS — Editorial Light Theme
 # ══════════════════════════════════════════════
 
-=======
-=======
->>>>>>> 67cfd7af8a57913b398a9397db516ec204e84fab
-# ── Custom CSS ──
->>>>>>> 7910f852176ee4f3bb2a77b6a4f52c715ae73185
 st.markdown("""
 <style>
     /* ── Google Fonts ── */
     @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Source+Sans+3:wght@300;400;500;600&display=swap');
 
     /* ── CSS Variables ── */
-    :root {
+    :root {""" + (
+"""
+        --bg: #1A1A1A;
+        --surface: #242424;
+        --border: #3A3A3A;
+        --text: #F1F1F1;
+        --text-soft: #A8A8A8;
+        --accent: #E5735C;
+        --accent-soft: #382420;
+        --success: #4EBA8A;
+        --success-soft: #1E3529;
+        --warning: #E8AA4C;
+        --warning-soft: #382C1A;
+        --sidebar-bg: #1F1F1F;
+""" if st.session_state.theme == "dark" else """
         --bg: #FAFAF8;
         --surface: #FFFFFF;
         --border: #E8E5E0;
@@ -57,6 +63,8 @@ st.markdown("""
         --warning: #D4922A;
         --warning-soft: #FFF8ED;
         --sidebar-bg: #F4F2EE;
+"""
+) + """
         --font-heading: 'DM Sans', sans-serif;
         --font-body: 'Source Sans 3', sans-serif;
     }
@@ -351,7 +359,6 @@ st.markdown("""
 # ══════════════════════════════════════════════
 
 def _check_login():
-<<<<<<< HEAD
     """Check for token in URL query params or browser cookies."""
     params = st.query_params
     token = params.get("token", None)
@@ -365,20 +372,7 @@ def _check_login():
 
     if token:
         try:
-<<<<<<< HEAD
-=======
             # Decode the token payload (base64 part before the signature)
-=======
-    """Check for token in URL query params (returned from Google OAuth callback)."""
-    params = st.query_params
-    token = params.get("token", None)
-    if token:
-        # Verify the token with the backend
-        try:
-            # Decode the token payload (base64 part before the signature)
-            import base64
->>>>>>> 67cfd7af8a57913b398a9397db516ec204e84fab
->>>>>>> 7910f852176ee4f3bb2a77b6a4f52c715ae73185
             data_part = token.rsplit(".", 1)[0]
             padding = 4 - len(data_part) % 4
             if padding != 4:
@@ -386,11 +380,6 @@ def _check_login():
             payload = json.loads(base64.urlsafe_b64decode(data_part))
             st.session_state["user"] = payload
             st.session_state["token"] = token
-<<<<<<< HEAD
-=======
-            # Clear the URL params
-            st.query_params.clear()
->>>>>>> 67cfd7af8a57913b398a9397db516ec204e84fab
         except Exception:
             pass
 
@@ -398,16 +387,10 @@ def _check_login():
 
 
 def _logout():
-<<<<<<< HEAD
     """Clear session state and cookies."""
     for key in ["user", "token"]:
         st.session_state.pop(key, None)
     cookie_controller.remove("token")
-=======
-    """Clear session state."""
-    for key in ["user", "token"]:
-        st.session_state.pop(key, None)
->>>>>>> 67cfd7af8a57913b398a9397db516ec204e84fab
     st.rerun()
 
 
@@ -459,7 +442,17 @@ with st.sidebar:
 
     st.divider()
 
+    # ── Theme Toggle ──
+    st.markdown('<div class="sg-section-label">Theme</div>', unsafe_allow_html=True)
+    theme_btn_label = "☀️ Light Mode" if st.session_state.theme == "dark" else "🌙 Dark Mode"
+    if st.button(theme_btn_label, use_container_width=True):
+        st.session_state.theme = "dark" if st.session_state.theme == "light" else "light"
+        st.rerun()
+
+    st.divider()
+
     # ── API Status ──
+    st.markdown('<div class="sg-section-label">Status</div>', unsafe_allow_html=True)
     try:
         health = requests.get(f"{API_BASE}/health", timeout=3)
         if health.status_code == 200:
