@@ -91,7 +91,7 @@ st.markdown("""
     section[data-testid="stSidebar"] .block-container {
         padding-top: 1.5rem !important;
     }
-    section[data-testid="stSidebar"] * {
+    section[data-testid="stSidebar"] *:not(.material-symbols-rounded) {
         font-family: var(--font-body) !important;
     }
 

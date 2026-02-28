@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SentinalGrid — Agentic Platform</title>
+    
+    <!-- Google Fonts: DM Sans for headings, Source Sans 3 for body -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Material Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="light-theme">
+
+    <!-- ── Sidebar Navigation ── -->
+    <aside class="sidebar">
+        <div class="logo">
+            <span class="material-symbols-rounded logo-icon">grid_view</span>
+            Sentinal<span class="accent">Grid</span>
+        </div>
+        <div class="tagline">Agentic Spreadsheet Platform</div>
+
+        <nav class="nav-menu">
+            <button class="nav-item active" data-target="page-new-campaign">
+                <span class="material-symbols-rounded">add_circle</span> New Campaign
+            </button>
+            <button class="nav-item" data-target="page-dashboard">
+                <span class="material-symbols-rounded">dashboard</span> Dashboard
+            </button>
+            <button class="nav-item" data-target="page-review">
+                <span class="material-symbols-rounded">warning</span> Review Queue
+            </button>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="theme-toggle" id="theme-toggle">
+                <span class="material-symbols-rounded" id="theme-icon">dark_mode</span>
+                <span id="theme-text">Dark Mode</span>
+            </div>
+            
+            <div class="status-indicator">
+                <span class="status-dot"></span>
+                <span id="api-status-text">Checking Backend...</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ── Main Content Area ── -->
+    <main class="main-content">
+        
+        <!-- PAGE 1: NEW CAMPAIGN -->
+        <section id="page-new-campaign" class="page active">
+            <div class="header-block">
+                <h1>Create New Campaign</h1>
+                <p>Upload your data and write a prompt — the AI will draft personalized messages for each row.</p>
+            </div>
+            
+            <div class="tip-box">
+                <span class="material-symbols-rounded">lightbulb</span>
+                <strong>Tip:</strong> Include a column named <code>email</code> or <code>phone</code>/<code>whatsapp</code> for auto-channel detection.
+            </div>
+
+            <form id="campaign-form" class="card form-card">
+                <div class="form-group">
+                    <label for="campaign-name">Campaign Name</label>
+                    <input type="text" id="campaign-name" placeholder="e.g., Marathon Start Times" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="master-prompt">Master Prompt</label>
+                    <textarea id="master-prompt" rows="4" placeholder="e.g., Send each contestant their individual start time and ask them to confirm availability." required></textarea>
+                </div>
+
+                <div class="form-group file-upload-group">
+                    <label for="data-file">Upload Data (CSV or XLSX)</label>
+                    <div class="file-drop-area" id="file-drop-area">
+                        <span class="material-symbols-rounded">cloud_upload</span>
+                        <span class="file-message">Drag & drop your file here or click to browse</span>
+                        <input type="file" id="data-file" accept=".csv, .xlsx, .xls" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="btn-create-campaign">
+                    <span class="material-symbols-rounded">rocket_launch</span> Create Campaign
+                </button>
+            </form>
+
+            <div id="create-notification" class="notification hidden"></div>
+        </section>
+
+        <!-- PAGE 2: DASHBOARD -->
+        <section id="page-dashboard" class="page">
+            <div class="header-block">
+                <h1>Campaign Dashboard</h1>
+                <p>Monitor campaign progress, view AI-generated messages, and launch outbound sends.</p>
+            </div>
+
+            <div class="card toolbar">
+                <select id="campaign-selector">
+                    <option value="" disabled selected>Loading campaigns...</option>
+                </select>
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" id="btn-refresh-dash">
+                        <span class="material-symbols-rounded">refresh</span> Refresh
+                    </button>
+                    <button class="btn btn-primary" id="btn-launch-campaign" disabled>
+                        <span class="material-symbols-rounded">send</span> Launch Campaign
+                    </button>
+                </div>
+            </div>
+
+            <div id="dashboard-empty-state" class="empty-state">
+                <span class="material-symbols-rounded">inbox</span>
+                <p>Select a campaign from the dropdown above</p>
+            </div>
+
+            <div id="dashboard-content" class="hidden">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">📋</div>
+                        <div class="stat-value" id="stat-total">0</div>
+                        <div class="stat-label">Total Rows</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">⏳</div>
+                        <div class="stat-value" id="stat-pending">0</div>
+                        <div class="stat-label">Pending</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📤</div>
+                        <div class="stat-value" id="stat-sent">0</div>
+                        <div class="stat-label">Sent</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">✅</div>
+                        <div class="stat-value" id="stat-replied">0</div>
+                        <div class="stat-label">Replied</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">⚠️</div>
+                        <div class="stat-value" id="stat-review">0</div>
+                        <div class="stat-label">Review</div>
+                    </div>
+                </div>
+
+                <div class="card data-table-card">
+                    <h3>Data Rows</h3>
+                    <div class="table-container">
+                        <table id="data-rows-table">
+                            <thead>
+                                <tr>
+                                    <th>Row</th>
+                                    <th>Channel</th>
+                                    <th>Contact</th>
+                                    <th>Status</th>
+                                    <th>Message Preview</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Rows injected via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 3: REVIEW QUEUE -->
+        <section id="page-review" class="page">
+            <div class="header-block">
+                <h1>Review Queue</h1>
+                <p>Rows flagged for human review due to low confidence by the Agent.</p>
+            </div>
+
+            <div class="card toolbar">
+                <select id="review-campaign-selector">
+                    <option value="" disabled selected>Loading campaigns...</option>
+                </select>
+                <button class="btn btn-secondary" id="btn-refresh-review">
+                    <span class="material-symbols-rounded">refresh</span> Refresh
+                </button>
+            </div>
+
+            <div id="review-empty-state" class="empty-state">
+                <span class="material-symbols-rounded">check_circle</span>
+                <p>No rows need review right now! 🎉</p>
+            </div>
+
+            <div id="review-list" class="review-list">
+                <!-- Review cards injected via JS -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Custom Logic -->
+    <script src="script.js"></script>
+</body>
+</html>
