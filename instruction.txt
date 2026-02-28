@@ -1,0 +1,11 @@
+# backend
+
+cd backend
+python -m uvicorn app.main:app --reload --port 8000
+
+-------------------------------------------------------
+
+# front end
+
+cd frontend
+streamlit run app.py --server.port 8501
