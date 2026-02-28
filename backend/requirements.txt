@@ -1,0 +1,14 @@
+fastapi[all]
+uvicorn[standard]
+sqlalchemy
+pandas
+openpyxl
+langchain
+langchain-google-genai
+google-auth
+google-auth-oauthlib
+pydantic-settings
+python-dotenv
+python-multipart
+aiosmtplib
+email-validator
