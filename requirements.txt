@@ -1,0 +1,10 @@
+streamlit
+requests
+pandas
+langchain_google_genai
+aiosmtplib
+uvicorn
+fastapi
+pydantic_settings
+sqlalchemy
+python-multipart
