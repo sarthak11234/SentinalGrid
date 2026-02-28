@@ -7,7 +7,9 @@ import streamlit as st
 import requests
 import pandas as pd
 import json
+import base64
 from urllib.parse import parse_qs
+from streamlit_cookies_controller import CookieController
 
 # ── Config ──
 API_BASE = "http://localhost:8000"
@@ -18,6 +20,8 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
 )
+
+cookie_controller = CookieController()
 
 # ── Custom CSS ──
 st.markdown("""
@@ -56,14 +60,23 @@ st.markdown("""
 # ══════════════════════════════════════════════
 
 def _check_login():
-    """Check for token in URL query params (returned from Google OAuth callback)."""
+    """Check for token in URL query params or browser cookies."""
     params = st.query_params
     token = params.get("token", None)
+    
     if token:
-        # Verify the token with the backend
+        # Save token to persistent cookies and clear URL
+        cookie_controller.set("token", token)
+        st.query_params.clear()
+        # Force a rerun to reload with clean URL immediately
+        st.rerun()
+    else:
+        # Fallback to persistent cookies
+        token = cookie_controller.get("token")
+
+    if token:
         try:
             # Decode the token payload (base64 part before the signature)
-            import base64
             data_part = token.rsplit(".", 1)[0]
             # Add padding if needed
             padding = 4 - len(data_part) % 4
@@ -72,8 +85,6 @@ def _check_login():
             payload = json.loads(base64.urlsafe_b64decode(data_part))
             st.session_state["user"] = payload
             st.session_state["token"] = token
-            # Clear the URL params
-            st.query_params.clear()
         except Exception:
             pass
 
@@ -81,9 +92,10 @@ def _check_login():
 
 
 def _logout():
-    """Clear session state."""
+    """Clear session state and cookies."""
     for key in ["user", "token"]:
         st.session_state.pop(key, None)
+    cookie_controller.remove("token")
     st.rerun()
 
 
