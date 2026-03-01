@@ -153,13 +153,19 @@ async def get_campaign(campaign_id: int, db: Session = Depends(get_db)):
 
 def _run_campaign(campaign_id: int):
     """Background task: draft messages & send emails for all pending rows."""
+    import traceback
     from app.database import SessionLocal  # local import to avoid circular
 
     db = SessionLocal()
     try:
         campaign = db.query(Campaign).filter(Campaign.id == campaign_id).first()
         if not campaign:
+            print(f"[CAMPAIGN] Campaign {campaign_id} not found!")
             return
+
+        settings = get_settings()
+        model_name = settings.gemini_model
+        print(f"[CAMPAIGN] Starting campaign {campaign_id} with model: {model_name}")
 
         campaign.status = "running"
         db.commit()
@@ -169,14 +175,19 @@ def _run_campaign(campaign_id: int):
             DataRow.message_status == "pending",
         ).all()
 
+        print(f"[CAMPAIGN] Found {len(rows)} pending rows")
+
         for row in rows:
             try:
                 # 1. Draft the message using Gemini
-                message = draft_message(campaign.master_prompt, row.row_data)
+                print(f"[CAMPAIGN] Row {row.id}: Drafting message with {model_name}...")
+                message = draft_message(campaign.master_prompt, row.row_data, model_name=model_name)
                 row.outbound_message = message
+                print(f"[CAMPAIGN] Row {row.id}: Drafted OK: {message[:80]}...")
 
                 # 2. Send via the appropriate channel
                 contact = row.contact_phone if row.channel == "whatsapp" else row.contact_email
+                print(f"[CAMPAIGN] Row {row.id}: Sending via {row.channel} to {contact}...")
                 if contact:
                     success = send_message(
                         to=contact,
@@ -185,8 +196,10 @@ def _run_campaign(campaign_id: int):
                         subject=f"Message from {campaign.name}",
                     )
                     row.message_status = "sent" if success else "failed"
+                    print(f"[CAMPAIGN] Row {row.id}: Send result: {'sent' if success else 'failed'}")
                 else:
                     row.message_status = "sent"  # Mark as sent even without contact (for demo)
+                    print(f"[CAMPAIGN] Row {row.id}: No contact, marked as sent (demo)")
 
                 db.commit()
 
@@ -195,6 +208,7 @@ def _run_campaign(campaign_id: int):
 
             except Exception as e:
                 print(f"[CAMPAIGN ERROR] Row {row.id}: {e}")
+                traceback.print_exc()
                 row.message_status = "failed"
                 db.commit()
 
@@ -204,8 +218,9 @@ def _run_campaign(campaign_id: int):
             DataRow.message_status == "failed",
         ).count()
 
-        campaign.status = "completed" if failed_count == 0 else "completed"
+        campaign.status = "completed"
         db.commit()
+        print(f"[CAMPAIGN] Campaign {campaign_id} completed. Failed: {failed_count}/{len(rows)}")
 
     finally:
         db.close()
