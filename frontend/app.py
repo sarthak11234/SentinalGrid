@@ -121,8 +121,22 @@ with st.sidebar:
             st.success("🟢 Backend connected")
         else:
             st.error("🔴 Backend error")
-    except requests.ConnectionError:
+    except (requests.ConnectionError, requests.ReadTimeout):
         st.error("🔴 Backend not running")
+
+    # ── WAHA WhatsApp Status ──
+    try:
+        wa_status = requests.get(f"{API_BASE}/webhooks/whatsapp-status", timeout=3)
+        if wa_status.status_code == 200:
+            wa_data = wa_status.json()
+            if wa_data.get("connected"):
+                st.success(f"📱 WhatsApp: {wa_data.get('status', 'connected')}")
+            else:
+                st.warning(f"📱 WhatsApp: {wa_data.get('status', 'offline')}")
+        else:
+            st.caption("📱 WhatsApp: not configured")
+    except (requests.ConnectionError, requests.ReadTimeout):
+        st.caption("📱 WhatsApp: unavailable")
 
     st.divider()
 
@@ -160,7 +174,7 @@ with st.sidebar:
     # ── Navigation ──
     page = st.radio(
         "Navigate",
-        ["🆕 New Campaign", "📋 Dashboard", "⚠️ Review Queue", "💬 Manual Reply"],
+        ["🆕 New Campaign", "📋 Dashboard", "📱 WhatsApp Send", "⚠️ Review Queue", "💬 Manual Reply"],
         index=0,
     )
 
@@ -188,6 +202,11 @@ if page == "🆕 New Campaign":
             "Master Prompt",
             placeholder="e.g., Send each contestant their individual start time and ask them to confirm availability.",
             height=100,
+        )
+        default_channel = st.selectbox(
+            "📨 Default Channel",
+            ["Auto-detect", "Email only", "WhatsApp only"],
+            help="Auto-detect uses phone column for WhatsApp, email column for Email. Override to force one channel.",
         )
         uploaded_file = st.file_uploader("Upload Data (CSV or XLSX)", type=["csv", "xlsx", "xls"])
         submitted = st.form_submit_button("📤 Create Campaign", use_container_width=True)
@@ -250,6 +269,109 @@ if page == "🆕 New Campaign":
             uploaded_file.seek(0)
         except Exception as e:
             st.error(f"Could not preview file: {e}")
+
+
+# ══════════════════════════════════════════════
+# PAGE: WhatsApp Send
+# ══════════════════════════════════════════════
+
+elif page == "📱 WhatsApp Send":
+    st.header("📱 WhatsApp Messaging")
+
+    tab1, tab2 = st.tabs(["Quick Send", "Campaign Messages"])
+
+    # ── Tab 1: Quick one-off message ──
+    with tab1:
+        st.markdown("Send a one-off WhatsApp message to any number.")
+        st.caption("⚠️ Requires WAHA to be running at the configured URL.")
+
+        with st.form("whatsapp_quick"):
+            phone = st.text_input("Phone Number", placeholder="e.g., 919876543210 (with country code, no +)")
+            wa_message = st.text_area("Message", placeholder="Type your message here...", height=120)
+            send_btn = st.form_submit_button("📱 Send WhatsApp", use_container_width=True)
+
+        if send_btn:
+            if not phone or not wa_message:
+                st.error("Please enter both phone number and message.")
+            else:
+                with st.spinner("Sending via WhatsApp..."):
+                    try:
+                        resp = requests.post(
+                            f"{API_BASE}/webhooks/send-whatsapp",
+                            json={"phone": phone, "message": wa_message},
+                            timeout=30,
+                        )
+                        if resp.status_code == 200:
+                            result = resp.json()
+                            if result.get("success"):
+                                st.success(f"✅ Message sent to {phone}!")
+                            else:
+                                st.error(f"❌ Failed to send: {result.get('message')}")
+                        else:
+                            st.error(f"Error: {resp.text}")
+                    except requests.ConnectionError:
+                        st.error("Cannot connect to backend")
+
+    # ── Tab 2: Campaign-level WhatsApp messages ──
+    with tab2:
+        st.markdown("View and resend WhatsApp messages from campaigns.")
+
+        try:
+            resp = requests.get(f"{API_BASE}/campaigns")
+            campaigns = resp.json().get("campaigns", [])
+        except requests.ConnectionError:
+            st.error("Cannot connect to backend.")
+            campaigns = []
+
+        if not campaigns:
+            st.info("No campaigns yet.")
+        else:
+            campaign_names = {c["id"]: c["name"] for c in campaigns}
+            selected_id = st.selectbox("Select Campaign", options=list(campaign_names.keys()),
+                                        format_func=lambda x: campaign_names[x], key="wa_campaign")
+
+            if selected_id:
+                detail_resp = requests.get(f"{API_BASE}/campaigns/{selected_id}")
+                detail = detail_resp.json()
+                rows = detail["rows"]
+
+                # Filter WhatsApp rows
+                wa_rows = [r for r in rows if r.get("channel") == "whatsapp"]
+
+                if not wa_rows:
+                    st.info("No WhatsApp rows in this campaign. Make sure your data has a phone/mobile/whatsapp column.")
+                else:
+                    st.success(f"📱 {len(wa_rows)} WhatsApp row(s) found")
+
+                    for r in wa_rows:
+                        contact = r.get("contact_phone", "Unknown")
+                        status = r["message_status"]
+                        status_icon = {"pending": "⏳", "sent": "✅", "replied": "💬", "failed": "❌", "review": "⚠️"}.get(status, "❓")
+
+                        with st.expander(f"{status_icon} Row {r['row_index']} — {contact} ({status})"):
+                            col1, col2 = st.columns(2)
+                            with col1:
+                                st.markdown("**Row Data:**")
+                                st.json(r["row_data"])
+                            with col2:
+                                st.markdown("**Message:**")
+                                st.text(r.get("outbound_message", "Not drafted yet"))
+                                if r.get("reply_text"):
+                                    st.markdown("**Reply:**")
+                                    st.text(r["reply_text"])
+
+                            # Resend button for failed messages
+                            if status == "failed" and r.get("outbound_message"):
+                                if st.button(f"🔄 Resend to {contact}", key=f"resend_{r['id']}"):
+                                    resend_resp = requests.post(
+                                        f"{API_BASE}/webhooks/send-whatsapp",
+                                        json={"phone": contact, "message": r["outbound_message"]},
+                                        timeout=30,
+                                    )
+                                    if resend_resp.status_code == 200 and resend_resp.json().get("success"):
+                                        st.success("Resent!")
+                                    else:
+                                        st.error("Resend failed")
 
 
 # ══════════════════════════════════════════════
