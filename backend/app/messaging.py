@@ -71,7 +71,7 @@ def send_whatsapp(to: str, body: str) -> bool:
     url = f"{settings.waha_url}/api/sendText"
     headers = {"Content-Type": "application/json"}
     if settings.waha_api_key:
-        headers["X-Api-Key"] = settings.waha_api_key
+        headers["X-Api-Key"] = str(settings.waha_api_key)
 
     payload = {
         "chatId": f"{phone}@c.us",
