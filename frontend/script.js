@@ -1,5 +1,113 @@
 const API_BASE = "http://localhost:8000";
 
+// ── Auth State ──
+let authToken = localStorage.getItem("sg_token");
+let authUser = JSON.parse(localStorage.getItem("sg_user") || "null");
+
+function parseToken(token) {
+    try {
+        const data = token.split(".")[0];
+        return JSON.parse(atob(data.replace(/-/g, '+').replace(/_/g, '/')));
+    } catch { return null; }
+}
+
+function showApp() {
+    document.getElementById("auth-login-overlay").classList.add("hidden");
+    document.getElementById("auth-success-overlay").classList.add("hidden");
+    document.querySelector(".sidebar").style.display = "";
+    document.querySelector(".main-content").style.display = "";
+}
+
+function showLogin() {
+    document.querySelector(".sidebar").style.display = "none";
+    document.querySelector(".main-content").style.display = "none";
+    document.getElementById("auth-success-overlay").classList.add("hidden");
+    document.getElementById("auth-login-overlay").classList.remove("hidden");
+}
+
+function startCountdown(userName) {
+    document.querySelector(".sidebar").style.display = "none";
+    document.querySelector(".main-content").style.display = "none";
+    document.getElementById("auth-login-overlay").classList.add("hidden");
+
+    const overlay = document.getElementById("auth-success-overlay");
+    overlay.classList.remove("hidden");
+
+    if (userName) {
+        document.getElementById("auth-welcome-name").textContent = `Welcome, ${userName}! You've signed in successfully.`;
+    }
+
+    let seconds = 15;
+    const numEl = document.getElementById("countdown-number");
+    const textEl = document.getElementById("countdown-text");
+    const ringEl = document.getElementById("countdown-ring-fill");
+    const circumference = 2 * Math.PI * 42;
+    ringEl.style.strokeDasharray = circumference;
+    ringEl.style.strokeDashoffset = 0;
+
+    const timer = setInterval(() => {
+        seconds--;
+        numEl.textContent = seconds;
+        textEl.textContent = seconds;
+        ringEl.style.strokeDashoffset = circumference * (1 - seconds / 15);
+
+        if (seconds <= 0) {
+            clearInterval(timer);
+            showApp();
+            initApp();
+        }
+    }, 1000);
+
+    document.getElementById("btn-skip-countdown").onclick = () => {
+        clearInterval(timer);
+        showApp();
+        initApp();
+    };
+}
+
+function handleAuth() {
+    // Check for token in URL (OAuth callback redirect)
+    const params = new URLSearchParams(window.location.search);
+    const urlToken = params.get("token");
+
+    if (urlToken) {
+        // Fresh login from OAuth callback
+        authToken = urlToken;
+        authUser = parseToken(urlToken);
+        localStorage.setItem("sg_token", urlToken);
+        localStorage.setItem("sg_user", JSON.stringify(authUser));
+        // Clean URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+        startCountdown(authUser?.name);
+        return;
+    }
+
+    if (authToken) {
+        // Check if token is expired
+        const payload = parseToken(authToken);
+        if (payload && payload.exp && payload.exp > Date.now() / 1000) {
+            showApp();
+            initApp();
+            return;
+        }
+        // Token expired — clear and show login
+        localStorage.removeItem("sg_token");
+        localStorage.removeItem("sg_user");
+        authToken = null;
+        authUser = null;
+    }
+
+    showLogin();
+}
+
+function logout() {
+    localStorage.removeItem("sg_token");
+    localStorage.removeItem("sg_user");
+    authToken = null;
+    authUser = null;
+    showLogin();
+}
+
 // ── DOM Elements ──
 const themeToggle = document.getElementById("theme-toggle");
 const themeIcon = document.getElementById("theme-icon");
@@ -25,13 +133,18 @@ const dashEmptyState = document.getElementById("dashboard-empty-state");
 const dashContent = document.getElementById("dashboard-content");
 
 // ── Initialization ──
-document.addEventListener("DOMContentLoaded", () => {
+function initApp() {
     checkBackendHealth();
     loadCampaigns();
-    
+}
+
+document.addEventListener("DOMContentLoaded", () => {
     // Theme toggle from localStorage
     const savedTheme = localStorage.getItem("sg_theme") || "light";
     setTheme(savedTheme);
+
+    // Auth flow
+    handleAuth();
 });
 
 // ── Navigation ──
@@ -49,6 +162,11 @@ navItems.forEach(item => {
         // Refresh data on page change
         if (targetId === "page-dashboard" || targetId === "page-review") {
             loadCampaigns();
+        }
+        if (targetId === "page-whatsapp") {
+            checkWhatsAppStatus();
+        } else {
+            stopWaPolling();
         }
     });
 });
@@ -132,7 +250,7 @@ campaignForm.addEventListener("submit", async (e) => {
     // Simulate UX
     btnCreate.disabled = true;
     btnCreate.innerHTML = `<span class="material-symbols-rounded" style="animation: spin 1s linear infinite;">progress_activity</span> Creating...`;
-    
+
     const formData = new FormData();
     formData.append("name", name);
     formData.append("master_prompt", prompt);
@@ -174,8 +292,8 @@ async function loadCampaigns() {
         if (!res.ok) return;
         const data = await res.json();
         const campaigns = data.campaigns || [];
-        
-        const optionsHtml = campaigns.length 
+
+        const optionsHtml = campaigns.length
             ? campaigns.map(c => `<option value="${c.id}">${c.name} (ID: ${c.id})</option>`).join("")
             : `<option value="" disabled selected>No campaigns available</option>`;
 
@@ -255,3 +373,110 @@ async function launchCampaign(cid) {
         console.error(e);
     }
 }
+
+
+// ══════════════════════════════════════════
+// WhatsApp Connection Page
+// ══════════════════════════════════════════
+
+let waPollingTimer = null;
+
+async function checkWhatsAppStatus() {
+    const dot = document.getElementById("wa-status-dot");
+    const label = document.getElementById("wa-status-label");
+    const sessionName = document.getElementById("wa-session-name");
+    const connectedState = document.getElementById("wa-connected-state");
+    const qrState = document.getElementById("wa-qr-state");
+    const errorState = document.getElementById("wa-error-state");
+
+    dot.className = "wa-dot checking";
+    label.textContent = "Checking…";
+
+    try {
+        const res = await fetch(`${API_BASE}/webhooks/whatsapp-status`);
+        const data = await res.json();
+
+        if (data.connected && data.status === "WORKING") {
+            // Connected!
+            dot.className = "wa-dot connected";
+            label.textContent = "Connected";
+            sessionName.textContent = data.name ? `(${data.name})` : "";
+            connectedState.classList.remove("hidden");
+            qrState.classList.add("hidden");
+            errorState.classList.add("hidden");
+            stopWaPolling();
+        } else if (data.connected && data.status === "SCAN_QR_CODE") {
+            // Needs QR scan
+            dot.className = "wa-dot scanning";
+            label.textContent = "Waiting for QR scan";
+            sessionName.textContent = "";
+            connectedState.classList.add("hidden");
+            qrState.classList.remove("hidden");
+            errorState.classList.add("hidden");
+            loadQrCode();
+            startWaPolling();
+        } else if (data.connected) {
+            // Some other status (STARTING, etc)
+            dot.className = "wa-dot scanning";
+            label.textContent = data.status || "Initializing…";
+            sessionName.textContent = "";
+            connectedState.classList.add("hidden");
+            qrState.classList.add("hidden");
+            errorState.classList.add("hidden");
+            startWaPolling();
+        } else {
+            // Not connected / error
+            dot.className = "wa-dot disconnected";
+            label.textContent = "Disconnected";
+            sessionName.textContent = "";
+            connectedState.classList.add("hidden");
+            qrState.classList.remove("hidden");
+            errorState.classList.add("hidden");
+            loadQrCode();
+            startWaPolling();
+        }
+    } catch (e) {
+        dot.className = "wa-dot disconnected";
+        label.textContent = "Offline";
+        sessionName.textContent = "";
+        connectedState.classList.add("hidden");
+        qrState.classList.add("hidden");
+        errorState.classList.remove("hidden");
+        document.getElementById("wa-error-detail").textContent =
+            "Could not reach the backend. Make sure both the backend and WAHA Docker container are running.";
+        stopWaPolling();
+    }
+}
+
+function loadQrCode() {
+    const img = document.getElementById("wa-qr-image");
+    const loading = document.getElementById("wa-qr-loading");
+    loading.classList.remove("hidden");
+    img.classList.add("hidden");
+
+    // Add a cache-buster so the browser fetches a fresh QR each time
+    img.src = `${API_BASE}/webhooks/whatsapp-qr?t=${Date.now()}`;
+    img.onload = () => {
+        loading.classList.add("hidden");
+        img.classList.remove("hidden");
+    };
+    img.onerror = () => {
+        loading.innerHTML = `<span class="material-symbols-rounded" style="color:var(--accent);">qr_code_2</span><p>QR code unavailable</p>`;
+    };
+}
+
+function startWaPolling() {
+    if (waPollingTimer) return;
+    waPollingTimer = setInterval(checkWhatsAppStatus, 10000); // every 10s
+}
+
+function stopWaPolling() {
+    if (waPollingTimer) {
+        clearInterval(waPollingTimer);
+        waPollingTimer = null;
+    }
+}
+
+// Wire up WhatsApp page buttons
+document.getElementById("btn-refresh-wa")?.addEventListener("click", checkWhatsAppStatus);
+document.getElementById("btn-reload-qr")?.addEventListener("click", loadQrCode);

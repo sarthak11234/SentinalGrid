@@ -205,6 +205,36 @@ async def whatsapp_status():
         return {"connected": False, "status": "offline", "detail": str(e)}
 
 
+@router.get("/whatsapp-qr")
+async def whatsapp_qr():
+    """Proxy the WAHA QR code image so the frontend can display it without CORS issues."""
+    import httpx
+    from fastapi.responses import Response
+
+    settings = get_settings()
+
+    try:
+        headers = {}
+        if settings.waha_api_key:
+            headers["X-Api-Key"] = str(settings.waha_api_key)
+
+        resp = httpx.get(
+            f"{settings.waha_url}/api/{settings.waha_session}/auth/qr",
+            headers=headers,
+            timeout=10,
+            params={"format": "image"},
+        )
+        if resp.status_code == 200:
+            return Response(
+                content=resp.content,
+                media_type=resp.headers.get("content-type", "image/png"),
+            )
+        else:
+            return {"error": True, "detail": resp.text, "status_code": resp.status_code}
+    except Exception as e:
+        return {"error": True, "detail": str(e)}
+
+
 @router.post("/email")
 async def email_webhook(
     db: Session = Depends(get_db),

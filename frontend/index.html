@@ -18,6 +18,46 @@
 </head>
 <body class="light-theme">
 
+    <!-- ── Auth: Login Overlay ── -->
+    <div id="auth-login-overlay" class="auth-overlay hidden">
+        <div class="auth-card">
+            <div class="auth-logo">
+                <span class="material-symbols-rounded logo-icon">grid_view</span>
+                <h1>Sentinal<span class="accent">Grid</span></h1>
+            </div>
+            <p class="auth-tagline">Agentic Spreadsheet & Communication Platform</p>
+            <p class="auth-desc">Sign in with your Google account to manage campaigns, draft AI messages, and send them across WhatsApp & Email.</p>
+            <a href="http://localhost:8000/auth/login" class="btn btn-google" id="btn-google-login">
+                <svg viewBox="0 0 48 48" width="22" height="22"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+                Sign in with Google
+            </a>
+        </div>
+    </div>
+
+    <!-- ── Auth: Success / Auto-Refresh Overlay ── -->
+    <div id="auth-success-overlay" class="auth-overlay hidden">
+        <div class="auth-card">
+            <div class="auth-logo">
+                <span class="material-symbols-rounded logo-icon" style="color: var(--success);">check_circle</span>
+                <h1>Welcome!</h1>
+            </div>
+            <p class="auth-tagline" id="auth-welcome-name">You've signed in successfully.</p>
+            <div class="auth-countdown">
+                <div class="countdown-ring">
+                    <svg viewBox="0 0 100 100">
+                        <circle class="ring-bg" cx="50" cy="50" r="42" />
+                        <circle class="ring-fill" id="countdown-ring-fill" cx="50" cy="50" r="42" />
+                    </svg>
+                    <span id="countdown-number">15</span>
+                </div>
+                <p>Redirecting to dashboard in <strong id="countdown-text">15</strong> seconds…</p>
+            </div>
+            <button class="btn btn-primary" id="btn-skip-countdown" style="margin-top:1rem;">
+                <span class="material-symbols-rounded">arrow_forward</span> Go Now
+            </button>
+        </div>
+    </div>
+
     <!-- ── Sidebar Navigation ── -->
     <aside class="sidebar">
         <div class="logo">
@@ -35,6 +75,9 @@
             </button>
             <button class="nav-item" data-target="page-review">
                 <span class="material-symbols-rounded">warning</span> Review Queue
+            </button>
+            <button class="nav-item" data-target="page-whatsapp">
+                <span class="material-symbols-rounded">chat</span> WhatsApp
             </button>
         </nav>
 
@@ -194,6 +237,68 @@
 
             <div id="review-list" class="review-list">
                 <!-- Review cards injected via JS -->
+            </div>
+        </section>
+
+        <!-- PAGE 4: WHATSAPP CONNECTION -->
+        <section id="page-whatsapp" class="page">
+            <div class="header-block">
+                <h1>WhatsApp Connection</h1>
+                <p>Connect your WhatsApp account via WAHA to enable campaign messaging.</p>
+            </div>
+
+            <!-- Status Card -->
+            <div class="card wa-status-card">
+                <div class="wa-status-header">
+                    <div class="wa-status-info">
+                        <div class="wa-status-dot-wrapper">
+                            <span class="wa-dot" id="wa-status-dot"></span>
+                            <span class="wa-status-label" id="wa-status-label">Checking…</span>
+                        </div>
+                        <span class="wa-session-name" id="wa-session-name"></span>
+                    </div>
+                    <button class="btn btn-secondary" id="btn-refresh-wa">
+                        <span class="material-symbols-rounded">refresh</span> Refresh
+                    </button>
+                </div>
+            </div>
+
+            <!-- QR Code / Connected State -->
+            <div class="card wa-qr-card" id="wa-qr-card">
+                <div id="wa-connected-state" class="wa-connected hidden">
+                    <span class="material-symbols-rounded wa-check-icon">verified</span>
+                    <h2>WhatsApp Connected</h2>
+                    <p>Your account is linked and ready to send & receive messages.</p>
+                </div>
+
+                <div id="wa-qr-state" class="wa-qr-state hidden">
+                    <h3>Scan QR Code</h3>
+                    <p>Open WhatsApp on your phone → Settings → Linked Devices → Link a Device</p>
+                    <div class="wa-qr-frame">
+                        <img id="wa-qr-image" src="" alt="WhatsApp QR Code" />
+                        <div id="wa-qr-loading" class="wa-qr-loading">
+                            <span class="material-symbols-rounded" style="animation: spin 1s linear infinite;">progress_activity</span>
+                            <p>Loading QR code…</p>
+                        </div>
+                    </div>
+                    <button class="btn btn-secondary" id="btn-reload-qr" style="margin-top:1rem;">
+                        <span class="material-symbols-rounded">qr_code_2</span> Reload QR
+                    </button>
+                </div>
+
+                <div id="wa-error-state" class="wa-error-state hidden">
+                    <span class="material-symbols-rounded" style="font-size:3rem; color:var(--accent);">error</span>
+                    <h3>Connection Error</h3>
+                    <p id="wa-error-detail">Could not reach WAHA. Make sure Docker is running.</p>
+                </div>
+            </div>
+
+            <!-- Instructions -->
+            <div class="tip-box">
+                <span class="material-symbols-rounded">info</span>
+                <div>
+                    <strong>Tip:</strong> WAHA runs on Docker at <code>localhost:3000</code>. Make sure the container is running before connecting.
+                </div>
             </div>
         </section>
 

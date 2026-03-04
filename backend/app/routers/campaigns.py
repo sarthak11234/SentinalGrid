@@ -28,17 +28,34 @@ router = APIRouter(prefix="/campaigns", tags=["campaigns"])
 def _detect_email_column(columns: list[str]) -> str | None:
     """Try to find the email column by name."""
     for col in columns:
-        if "email" in col.lower() or "mail" in col.lower():
+        low = col.lower().strip()
+        if any(k in low for k in ["email", "mail", "e-mail"]):
             return col
     return None
 
 
 def _detect_phone_column(columns: list[str]) -> str | None:
     """Try to find the phone/WhatsApp column by name."""
+    # Priority 1: exact patterns
     for col in columns:
-        low = col.lower()
-        if any(k in low for k in ["phone", "mobile", "whatsapp", "cell", "contact_number"]):
+        low = col.lower().strip()
+        if any(k in low for k in ["phone", "mobile", "whatsapp", "cell"]):
             return col
+
+    # Priority 2: columns with "contact" + number-like words (e.g., "Contact No.", "Contact Number")
+    for col in columns:
+        low = col.lower().strip()
+        if "contact" in low and any(k in low for k in ["no", "num", "number", "#"]):
+            return col
+        if "contact" in low:
+            return col
+
+    # Priority 3: "tel" or "telephone"
+    for col in columns:
+        low = col.lower().strip()
+        if any(k in low for k in ["tel", "telephone"]):
+            return col
+
     return None
 
 
