@@ -60,14 +60,33 @@ def _detect_phone_column(columns: list[str]) -> str | None:
 
 
 def _parse_file(file: UploadFile) -> pd.DataFrame:
-    """Parse an uploaded CSV or Excel file into a DataFrame."""
+    """Parse an uploaded CSV or Excel file into a DataFrame.
+    Auto-detects the header row for Excel files with title/merged rows.
+    """
     contents = file.file.read()
     filename = file.filename or ""
 
     if filename.endswith(".csv"):
         return pd.read_csv(io.BytesIO(contents))
     elif filename.endswith((".xlsx", ".xls")):
-        return pd.read_excel(io.BytesIO(contents))
+        # Try to auto-detect the header row by scanning the first 10 rows
+        df_raw = pd.read_excel(io.BytesIO(contents), header=None, nrows=15)
+        best_row = 0
+        best_score = 0
+
+        for i in range(min(10, len(df_raw))):
+            row_vals = df_raw.iloc[i]
+            # Score: count of non-null cells that look like text column headers
+            score = sum(
+                1 for v in row_vals
+                if pd.notna(v) and isinstance(v, str) and len(v.strip()) > 0 and not v.strip().replace('.', '').isdigit()
+            )
+            if score > best_score:
+                best_score = score
+                best_row = i
+
+        # Re-read with the detected header row
+        return pd.read_excel(io.BytesIO(contents), header=best_row)
     else:
         raise HTTPException(status_code=400, detail="Unsupported file type. Use CSV or XLSX.")
 
