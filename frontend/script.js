@@ -14,19 +14,19 @@ function parseToken(token) {
 function showApp() {
     document.getElementById("auth-login-overlay").classList.add("hidden");
     document.getElementById("auth-success-overlay").classList.add("hidden");
-    document.querySelector(".sidebar").style.display = "";
+    document.querySelector(".top-nav").style.display = "";
     document.querySelector(".main-content").style.display = "";
 }
 
 function showLogin() {
-    document.querySelector(".sidebar").style.display = "none";
+    document.querySelector(".top-nav").style.display = "none";
     document.querySelector(".main-content").style.display = "none";
     document.getElementById("auth-success-overlay").classList.add("hidden");
     document.getElementById("auth-login-overlay").classList.remove("hidden");
 }
 
 function startCountdown(userName) {
-    document.querySelector(".sidebar").style.display = "none";
+    document.querySelector(".top-nav").style.display = "none";
     document.querySelector(".main-content").style.display = "none";
     document.getElementById("auth-login-overlay").classList.add("hidden");
 
