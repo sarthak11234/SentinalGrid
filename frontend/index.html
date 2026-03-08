@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SentinalGrid — Agentic Platform</title>
     
-    <!-- Google Fonts: DM Sans for headings, Source Sans 3 for body -->
+    <!-- Google Fonts: Plus Jakarta Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&display=swap" rel="stylesheet">
     
     <!-- Material Icons -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
@@ -58,83 +58,80 @@
         </div>
     </div>
 
-    <!-- ── Sidebar Navigation ── -->
-    <aside class="sidebar">
-        <div class="logo">
-            <span class="material-symbols-rounded logo-icon">grid_view</span>
-            Sentinal<span class="accent">Grid</span>
-        </div>
-        <div class="tagline">Agentic Spreadsheet Platform</div>
-
-        <nav class="nav-menu">
-            <button class="nav-item active" data-target="page-new-campaign">
-                <span class="material-symbols-rounded">add_circle</span> New Campaign
-            </button>
-            <button class="nav-item" data-target="page-dashboard">
-                <span class="material-symbols-rounded">dashboard</span> Dashboard
-            </button>
-            <button class="nav-item" data-target="page-review">
-                <span class="material-symbols-rounded">warning</span> Review Queue
-            </button>
-            <button class="nav-item" data-target="page-whatsapp">
-                <span class="material-symbols-rounded">chat</span> WhatsApp
-            </button>
-        </nav>
-
-        <div class="sidebar-footer">
-            <div class="theme-toggle" id="theme-toggle">
-                <span class="material-symbols-rounded" id="theme-icon">dark_mode</span>
-                <span id="theme-text">Dark Mode</span>
+    <!-- ── Top Navigation ── -->
+    <header class="top-nav">
+        <div class="nav-container">
+            <div class="logo">
+                <span class="material-symbols-rounded logo-icon">grid_view</span>
+                Sentinal<span class="accent">Grid</span>
             </div>
-            
-            <div class="status-indicator">
-                <span class="status-dot"></span>
-                <span id="api-status-text">Checking Backend...</span>
+
+            <nav class="nav-menu">
+                <button class="nav-item active" data-target="page-new-campaign">New Campaign</button>
+                <button class="nav-item" data-target="page-dashboard">Dashboard</button>
+                <button class="nav-item" data-target="page-review">Review Queue</button>
+                <button class="nav-item" data-target="page-whatsapp">WhatsApp</button>
+            </nav>
+
+            <div class="nav-actions">
+                <div class="theme-toggle" id="theme-toggle" title="Toggle Theme">
+                    <span class="material-symbols-rounded" id="theme-icon">dark_mode</span>
+                </div>
+                <div class="status-indicator">
+                    <span class="status-dot"></span>
+                </div>
             </div>
         </div>
-    </aside>
+    </header>
 
     <!-- ── Main Content Area ── -->
     <main class="main-content">
         
         <!-- PAGE 1: NEW CAMPAIGN -->
         <section id="page-new-campaign" class="page active">
-            <div class="header-block">
-                <h1>Create New Campaign</h1>
-                <p>Upload your data and write a prompt — the AI will draft personalized messages for each row.</p>
+            <div class="hero-section">
+                <div class="hero-content">
+                    <h1>Create Campaign.</h1>
+                    <p class="hero-subtitle">Upload your data and write a prompt. The AI will draft personalized messages for each row instantaneously.</p>
+                </div>
             </div>
             
-            <div class="tip-box">
-                <span class="material-symbols-rounded">lightbulb</span>
-                <strong>Tip:</strong> Include a column named <code>email</code> or <code>phone</code>/<code>whatsapp</code> for auto-channel detection.
+            <div class="interactive-split-card">
+                <div class="split-left">
+                    <h2>Setup your Agent</h2>
+                    <ul class="feature-checklist">
+                        <li><span class="material-symbols-rounded">check_circle</span> Upload CSV or XLSX data</li>
+                        <li><span class="material-symbols-rounded">check_circle</span> Include `email` or `phone` column</li>
+                        <li><span class="material-symbols-rounded">check_circle</span> Define your Master Prompt</li>
+                    </ul>
+                </div>
+                <div class="split-right">
+                    <form id="campaign-form" class="card form-card">
+                        <div class="form-group">
+                            <label for="campaign-name">Campaign Name</label>
+                            <input type="text" id="campaign-name" placeholder="e.g., Marathon Start Times" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="master-prompt">Master Prompt</label>
+                            <textarea id="master-prompt" rows="3" placeholder="e.g., Send each contestant their individual start time and ask them to confirm availability." required></textarea>
+                        </div>
+
+                        <div class="form-group file-upload-group">
+                            <div class="file-drop-area" id="file-drop-area">
+                                <span class="material-symbols-rounded">cloud_upload</span>
+                                <span class="file-message">Drag & drop file or browse</span>
+                                <input type="file" id="data-file" accept=".csv, .xlsx, .xls" required>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-large" id="btn-create-campaign">
+                            Create Campaign <span class="material-symbols-rounded">arrow_forward</span>
+                        </button>
+                    </form>
+                    <div id="create-notification" class="notification hidden"></div>
+                </div>
             </div>
-
-            <form id="campaign-form" class="card form-card">
-                <div class="form-group">
-                    <label for="campaign-name">Campaign Name</label>
-                    <input type="text" id="campaign-name" placeholder="e.g., Marathon Start Times" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="master-prompt">Master Prompt</label>
-                    <textarea id="master-prompt" rows="4" placeholder="e.g., Send each contestant their individual start time and ask them to confirm availability." required></textarea>
-                </div>
-
-                <div class="form-group file-upload-group">
-                    <label for="data-file">Upload Data (CSV or XLSX)</label>
-                    <div class="file-drop-area" id="file-drop-area">
-                        <span class="material-symbols-rounded">cloud_upload</span>
-                        <span class="file-message">Drag & drop your file here or click to browse</span>
-                        <input type="file" id="data-file" accept=".csv, .xlsx, .xls" required>
-                    </div>
-                </div>
-
-                <button type="submit" class="btn btn-primary" id="btn-create-campaign">
-                    <span class="material-symbols-rounded">rocket_launch</span> Create Campaign
-                </button>
-            </form>
-
-            <div id="create-notification" class="notification hidden"></div>
         </section>
 
         <!-- PAGE 2: DASHBOARD -->
