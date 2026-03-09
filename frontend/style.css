@@ -7,33 +7,34 @@
     --surface-dark: #000000;
     --border: #E8E5E0;
     --border-dark: #333333;
-    
+
     --text: #000000;
     --text-soft: #6E6E73;
     --text-inverse: #FFFFFF;
     --text-inverse-soft: #A1A1A6;
-    
-    --accent: #5452F6; /* Electric Blue */
+
+    --accent: #5452F6;
+    /* Electric Blue */
     --accent-hover: #4341D1;
     --accent-soft: rgba(84, 82, 246, 0.08);
-    
+
     --success: #3A9E6F;
     --success-soft: #EDFAF3;
     --warning: #D4922A;
     --warning-soft: #FFF8ED;
     --error: #FF3B30;
     --error-soft: #FFEBE9;
-    
+
     --font-heading: 'Plus Jakarta Sans', sans-serif;
     --font-body: 'Plus Jakarta Sans', sans-serif;
-    
+
     --nav-height: 80px;
     --radius-sm: 12px;
     --radius-md: 24px;
     --radius-lg: 32px;
     --radius-xl: 48px;
     --radius-pill: 999px;
-    
+
     --shadow-soft: 0 20px 40px rgba(0, 0, 0, 0.04);
 }
 
@@ -62,7 +63,8 @@ body {
     background-color: var(--bg);
     color: var(--text);
     display: flex;
-    flex-direction: column; /* Changed from row */
+    flex-direction: column;
+    /* Changed from row */
     height: 100vh;
     overflow: hidden;
     transition: background-color 0.3s ease, color 0.3s ease;
@@ -75,11 +77,13 @@ h3,
 h4 {
     font-family: var(--font-heading);
     color: var(--text);
-    letter-spacing: -0.03em; /* Tighter letter spacing from Sync.Sphere */
+    letter-spacing: -0.03em;
+    /* Tighter letter spacing from Sync.Sphere */
 }
 
 h1 {
-    font-size: 4rem; /* Massive typography */
+    font-size: 4rem;
+    /* Massive typography */
     font-weight: 800;
     line-height: 1.1;
     margin-bottom: 1rem;
@@ -159,7 +163,7 @@ p {
     background: var(--surface);
     padding: 0.5rem;
     border-radius: var(--radius-pill);
-    box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
     border: 1px solid var(--border);
 }
 
@@ -281,7 +285,8 @@ p {
 
 .interactive-split-card {
     display: flex;
-    background: var(--surface-dark); /* Black card like Dribbble */
+    background: var(--surface-dark);
+    /* Black card like Dribbble */
     border-radius: var(--radius-xl);
     padding: 4rem;
     gap: 4rem;
@@ -329,6 +334,12 @@ p {
     padding: 2.5rem;
     position: relative;
     /* This creates the inner white card in the black section */
+}
+
+[data-theme="dark"] .split-right {
+    background: #1C1C1E;
+    /* Distinctly lighter than the #000 split-card background */
+    border: 1px solid var(--border-dark);
 }
 
 /* ── Components ── */
@@ -392,6 +403,12 @@ select {
     transition: all 0.2s ease;
 }
 
+[data-theme="dark"] input[type="text"],
+[data-theme="dark"] textarea,
+[data-theme="dark"] select {
+    background: #0A0A0A;
+}
+
 input:focus,
 textarea:focus,
 select:focus {
@@ -441,7 +458,8 @@ select:focus {
     font-weight: 700;
     font-size: 1rem;
     padding: 1rem 2rem;
-    border-radius: var(--radius-pill); /* Pill shaped! */
+    border-radius: var(--radius-pill);
+    /* Pill shaped! */
     border: none;
     cursor: pointer;
     display: inline-flex;
@@ -940,7 +958,8 @@ tr:hover td {
     align-items: center;
     justify-content: center;
     gap: 0.75rem;
-    color: #666; /* Fixed color since it's on white bg */
+    color: #666;
+    /* Fixed color since it's on white bg */
 }
 
 .wa-qr-loading .material-symbols-rounded {

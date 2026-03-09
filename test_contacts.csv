@@ -1,0 +1,4 @@
+name,email,phone,event,start_time
+Alice User,alice@example.com,,Marathon,08:00 AM
+Bob Tester,bob@example.com,1234567890,Marathon,08:30 AM
+Charlie Beta,,0987654321,Marathon,09:00 AM
