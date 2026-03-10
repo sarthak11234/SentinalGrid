@@ -1,96 +1,77 @@
-<p align="center">
-  <h1 align="center">🟢 SentinalGrid</h1>
-  <p align="center">
-    <strong>Agentic Spreadsheet & Communication Platform</strong>
-  </p>
-  <p align="center">
-    Upload a spreadsheet. Write a prompt. Let AI draft personalized messages and manage replies — automatically.
-  </p>
-  <p align="center">
-    <img src="https://img.shields.io/badge/python-3.10%2B-blue?logo=python&logoColor=white" alt="Python 3.10+">
-    <img src="https://img.shields.io/badge/FastAPI-0.100%2B-009688?logo=fastapi&logoColor=white" alt="FastAPI">
-    <img src="https://img.shields.io/badge/Gemini-AI-4285F4?logo=googlegemini&logoColor=white" alt="Gemini AI">
-    <img src="https://img.shields.io/badge/WhatsApp-25D366?logo=whatsapp&logoColor=white" alt="WhatsApp">
-    <img src="https://img.shields.io/badge/License-MIT-yellow" alt="MIT License">
-  </p>
-</p>
+<div align="center">
+
+# 🟢 SentinelGrid
+
+**The Agentic Spreadsheet & Communication Platform**
+
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue?logo=python&logoColor=white)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.100%2B-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Gemini API](https://img.shields.io/badge/Gemini-AI-4285F4?logo=googlegemini&logoColor=white)](https://ai.google.dev/)
+[![WhatsApp WAHA](https://img.shields.io/badge/WhatsApp-25D366?logo=whatsapp&logoColor=white)](https://waha.devlikeapro.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+*Upload a spreadsheet. Write a prompt. Let AI draft personalized messages, send them, and manage replies — completely automatically.*
+
+[**Explore the Docs**](#-api-reference) · [**Report Bug**](https://github.com/your-username/SentinelGrid/issues) · [**Request Feature**](https://github.com/your-username/SentinelGrid/issues)
+
+</div>
 
 ---
 
-## 📌 Overview
+## ⚡ The Problem
 
-**SentinalGrid** is an AI-powered communication platform that turns your spreadsheet data into personalized outbound campaigns over **WhatsApp** and **Email**. Powered by **Google Gemini**, it reads each row of your uploaded data, drafts a unique message per recipient, sends it through the appropriate channel, and intelligently processes inbound replies — updating your dataset automatically.
+Managing bulk communications (like event reminders, sales outreach, or feedback collection) usually means toggling between clunky spreadsheets, email clients, and WhatsApp. Automation tools exist, but they are rigid and impersonal. If someone replies to your automated message, the automation breaks and you're forced to step in manually.
 
-When the AI is uncertain about a reply, it flags the row for **human review**, ensuring data integrity with a confidence-based approval workflow.
+### 💡 The SentinelGrid Solution
 
----
+**SentinelGrid** bridges the gap between structured data and human-like conversation. It turns your spreadsheet data into hyper-personalized, context-aware outbound campaigns over **WhatsApp** and **Email**. 
 
-## ✨ Key Features
+Powered by **Google Gemini**, SentinelGrid doesn't just send messages. It reads inbound replies, understands the context, extracts meaningful data updates, and seamlessly updates your system. When the AI is uncertain, it flags the conversation for a **Human-in-the-Loop** review.
 
-| Feature | Description |
-|---|---|
-| 📤 **Multi-Channel Outreach** | Send personalized messages via **WhatsApp** (WAHA) and **Email** (Gmail SMTP) |
-| 🤖 **AI-Drafted Messages** | Google Gemini drafts unique messages per row based on a master prompt |
-| 📥 **Smart Reply Processing** | Inbound replies are analyzed by AI to extract intent and data updates |
-| ⚖️ **Confidence Scoring** | Low-confidence replies are flagged for human review instead of auto-updating |
-| 📊 **Campaign Dashboard** | Real-time stats — pending, sent, replied, and flagged rows at a glance |
-| 🔄 **Webhook Integration** | WAHA WhatsApp webhook for real-time inbound message processing |
-| 🔐 **Google OAuth** | Secure authentication via Google SSO |
-| 🧠 **Model Selection** | Switch between Gemini models (2.5 Pro, 2.5 Flash, 2.0 Flash) on the fly |
-| 🌗 **Dark / Light Mode** | Sleek UI with theme toggle |
+## ✨ Core Features
+
+* 🚀 **Agentic Personalization:** Google Gemini drafts a unique, contextually rich message for every single row in your dataset based on a master prompt.
+* 🌐 **Multi-Channel Dispatch:** Intelligently routes messages via **WhatsApp** (using WAHA) or **Email** (via Gmail SMTP) based on available contact details.
+* 🧠 **Smart Reply Ingestion:** Webhooks capture inbound replies. The AI analyzes the intent and extracts data updates directly from the conversation.
+* 🛡️ **Confidence-Based Human Review:** Low-confidence AI extractions are flagged in a beautiful Review Queue dashboard instead of auto-updating your database, ensuring 100% data integrity.
+* 📊 **Real-time Master Dashboard:** Track pending, sent, replied, and flagged operations at a glance.
+* 🔐 **Secure by default:** Built-in Google OAuth 2.0.
 
 ---
 
 ## 🏗️ Architecture
 
-```
-┌─────────────────┐       ┌──────────────────────────────────────┐
-│   Frontend UI   │◄─────►│         FastAPI Backend (8000)        │
-│  (HTML/CSS/JS)  │       │                                      │
-└─────────────────┘       │  ┌──────────┐  ┌──────────────────┐  │
-                          │  │  Google   │  │   Messaging      │  │
-                          │  │  Gemini   │  │  ┌────────────┐  │  │
-                          │  │  (Agent)  │  │  │ WhatsApp   │  │  │
-                          │  │          │  │  │  (WAHA)    │  │  │
-                          │  └──────────┘  │  ├────────────┤  │  │
-                          │                │  │ Email      │  │  │
-                          │                │  │  (SMTP)    │  │  │
-                          │                │  └────────────┘  │  │
-                          │  ┌──────────────────────────────┐  │  │
-                          │  │    SQLite + SQLAlchemy ORM   │  │  │
-                          │  └──────────────────────────────┘  │  │
-                          └──────────────────────────────────────┘
-                                        ▲
-                                        │ Webhooks
-                          ┌─────────────┴─────────────┐
-                          │   WAHA (WhatsApp Gateway)  │
-                          │     Docker — port 3000     │
-                          └───────────────────────────┘
+```mermaid
+graph TD
+    classDef client fill:#f9f9f9,stroke:#333,stroke-width:2px;
+    classDef backend fill:#e1f5fe,stroke:#0288d1,stroke-width:2px;
+    classDef ai fill:#f3e5f5,stroke:#8e24aa,stroke-width:2px;
+    classDef external fill:#e8f5e9,stroke:#388e3c,stroke-width:2px;
+    classDef db fill:#fff3e0,stroke:#f57c00,stroke-width:2px;
+
+    UI["💻 Frontend UI<br>(Vanilla JS/HTML/CSS)"]:::client
+    API["⚙️ FastAPI Backend<br>(Port 8000)"]:::backend
+    DB[("🗄️ SQLite + SQLAlchemy")]:::db
+    
+    Gemini["🧠 Google Gemini AI<br>(Reasoning & Drafting)"]:::ai
+    WAHA["📱 WAHA Docker<br>(WhatsApp Gateway)"]:::external
+    SMTP["📧 SMTP Server<br>(Email Sending)"]:::external
+    
+    UI <-->|REST API| API
+    API <-->|ORM| DB
+    API <-->|Prompts & Intent| Gemini
+    API -->|Outbound Email| SMTP
+    API <-->|Webhooks & Outbound| WAHA
 ```
 
-### How It Works
+### 🔁 The Workflow
 
-1. **Upload & Configure** — Upload a CSV/XLSX file and write a master prompt describing what to communicate.
-2. **AI Drafts Messages** — Gemini reads each row and drafts a personalized message.
-3. **Multi-Channel Send** — Messages are dispatched via WhatsApp or Email based on available contact info.
-4. **Receive Replies** — WAHA webhooks forward inbound WhatsApp replies to the backend.
-5. **AI Processes Replies** — The agent extracts intent and suggested data updates from each reply.
-6. **Human-in-the-Loop** — Low-confidence extractions are flagged for manual review in the Review Queue.
-
----
-
-## 🛠️ Tech Stack
-
-| Layer | Technology |
-|---|---|
-| **Backend** | Python · FastAPI · Uvicorn |
-| **AI / LLM** | Google Gemini (via LangChain) |
-| **Database** | SQLite · SQLAlchemy ORM |
-| **WhatsApp** | WAHA (self-hosted WhatsApp HTTP API) |
-| **Email** | aiosmtplib (Gmail SMTP) |
-| **Auth** | Google OAuth 2.0 (custom HMAC tokens) |
-| **Frontend** | Vanilla HTML · CSS · JavaScript |
-| **Data Processing** | Pandas |
+1. **Upload** a CSV/XLSX file and define a target objective (Master Prompt).
+2. **Draft** — Gemini reads every row and dynamically generates localized, tailored messages.
+3. **Dispatch** — Messages are routed via WhatsApp or Email.
+4. **Listen** — WAHA Webhooks stream incoming WhatsApp replies back to the SentinelGrid backend.
+5. **Analyze** — The agent categorizes replies (e.g., *Confirmed*, *Asking for reschedule*) and proposes data state changes.
+6. **Review** — Discrepancies drop into the Human-in-the-Loop review queue.
 
 ---
 
@@ -98,77 +79,41 @@ When the AI is uncertain about a reply, it flags the row for **human review**, e
 
 ### Prerequisites
 
+To run SentinelGrid locally, you will need:
 - **Python 3.10+**
-- **Docker** (for WAHA WhatsApp gateway)
-- A **Google Cloud** project with OAuth 2.0 credentials
-- A **Gemini API key** ([Get one free](https://aistudio.google.com/apikey))
-- A **Gmail App Password** (for SMTP email sending)
+- **Docker** (Required for the WhatsApp gateway)
+- A **Google Cloud Project** with OAuth 2.0 configured
+- A **Gemini API Key** ([Get it here](https://aistudio.google.com/apikey) - Free Tier available)
+- A **Gmail App Password** (for SMTP)
 
-### 1. Clone the Repository
-
-```bash
-git clone https://github.com/your-username/SentinalGrid.git
-cd SentinalGrid
-```
-
-### 2. Create a Virtual Environment
+### 1. Clone & Setup
 
 ```bash
+git clone https://github.com/your-username/SentinelGrid.git
+cd SentinelGrid
+
+# Create and activate virtual environment
 python -m venv .venv
+source .venv/bin/activate  # macOS/Linux
+# OR
+.venv\Scripts\activate     # Windows
 
-# Windows
-.venv\Scripts\activate
-
-# macOS / Linux
-source .venv/bin/activate
-```
-
-### 3. Install Dependencies
-
-```bash
+# Install dependencies
 pip install -r requirements.txt
 ```
 
-### 4. Configure Environment Variables
+### 2. Environment Variables
 
-Copy the example file and fill in your credentials:
+Create your environment file:
 
 ```bash
 cp .env.example .env
 ```
+Edit `.env` and add your keys (OAuth, Gemini, SMTP, etc.).
 
-Edit `.env` with your values:
+### 3. Launch the WhatsApp Gateway (WAHA)
 
-```env
-# Google OAuth
-GOOGLE_CLIENT_ID=your-google-client-id
-GOOGLE_CLIENT_SECRET=your-google-client-secret
-
-# Google Gemini (free tier)
-GEMINI_API_KEY=your-gemini-api-key
-GEMINI_MODEL=gemini-2.5-flash
-
-# Email / SMTP
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=your-email@gmail.com
-SMTP_PASS=your-app-password
-
-# WAHA WhatsApp (self-hosted)
-WAHA_URL=http://localhost:3000
-WAHA_API_KEY=mykey123
-WAHA_SESSION=default
-
-# Database
-DATABASE_URL=sqlite:///./data/sentinalgrid.db
-
-# App
-SECRET_KEY=change-me-to-a-random-string
-FRONTEND_URL=http://localhost:8501
-CONFIDENCE_THRESHOLD=0.7
-```
-
-### 5. Start WAHA (WhatsApp Gateway)
+SentinelGrid uses the open-source WAHA engine to bridge HTTP to WhatsApp.
 
 ```bash
 docker run -d \
@@ -178,150 +123,57 @@ docker run -d \
   -e WAHA_API_KEY_PLAIN=mykey123 \
   devlikeapro/waha
 ```
+> **Action Required**: Navigate to `http://localhost:3000` and scan the QR code with your WhatsApp app to establish the connection.
 
-> After starting, scan the QR code at `http://localhost:3000` to link your WhatsApp account.
+### 4. Start the Application
 
-### 6. Start the Backend
-
+**Start the Backend (FastAPI)**
 ```bash
 cd backend
 python -m uvicorn app.main:app --reload --port 8000
 ```
+*API available at `http://localhost:8000` | Swagger UI at `http://localhost:8000/docs`*
 
-The API will be available at `http://localhost:8000` with interactive docs at `/docs`.
-
-### 7. Start the Frontend
-
-Open `frontend/index.html` directly in your browser, or serve it with any static file server:
-
+**Start the Frontend**
 ```bash
-# Quick option with Python
+# In a new terminal
 cd frontend
 python -m http.server 8501
 ```
+*Frontend available at `http://localhost:8501`*
 
 ---
 
 ## 📡 API Reference
 
-Base URL: `http://localhost:8000`
+Here are the primary integration points for SentinelGrid:
 
-### System
-
-| Method | Endpoint | Description |
-|---|---|---|
-| `GET` | `/health` | Health check |
-
-### Authentication
-
-| Method | Endpoint | Description |
-|---|---|---|
-| `GET` | `/auth/login` | Redirect to Google OAuth consent screen |
-| `GET` | `/auth/callback` | OAuth callback — exchanges code for session token |
-
-### Campaigns
-
-| Method | Endpoint | Description |
-|---|---|---|
-| `POST` | `/campaigns` | Create a new campaign (multipart form + file upload) |
-| `GET` | `/campaigns` | List all campaigns |
-| `GET` | `/campaigns/{id}` | Get campaign details with rows and stats |
-| `POST` | `/campaigns/{id}/launch` | Launch a campaign (drafts & sends messages in background) |
-| `GET` | `/campaigns/{id}/reviews` | Get rows flagged for human review |
-| `POST` | `/campaigns/{id}/rows/{row_id}/review` | Approve or reject a suggested update |
-
-### Webhooks
-
-| Method | Endpoint | Description |
-|---|---|---|
-| `POST` | `/webhooks/whatsapp` | WAHA inbound message webhook |
-| `POST` | `/webhooks/manual-reply` | Manual reply input (prototype) |
-| `POST` | `/webhooks/send-whatsapp` | Quick one-off WhatsApp message |
-| `GET` | `/webhooks/whatsapp-status` | Check WAHA connection status |
-| `POST` | `/webhooks/email` | Email inbound webhook (placeholder) |
-
-### Settings
-
-| Method | Endpoint | Description |
-|---|---|---|
-| `GET` | `/settings/models` | Get current and available Gemini models |
-| `POST` | `/settings/models` | Switch the active Gemini model |
-
----
-
-## 📂 Project Structure
-
-```
-SentinalGrid/
-├── backend/
-│   ├── app/
-│   │   ├── main.py           # FastAPI app entry point & CORS config
-│   │   ├── config.py         # Pydantic Settings (env vars)
-│   │   ├── database.py       # SQLAlchemy engine & session setup
-│   │   ├── models.py         # ORM models — Campaign, DataRow
-│   │   ├── schemas.py        # Pydantic request/response schemas
-│   │   ├── agent.py          # Gemini AI — message drafting & reply processing
-│   │   ├── auth.py           # Google OAuth 2.0 login flow
-│   │   ├── messaging.py      # Email (SMTP) + WhatsApp (WAHA) senders
-│   │   └── routers/
-│   │       ├── campaigns.py  # Campaign CRUD, file upload & launch
-│   │       ├── webhooks.py   # Inbound reply webhooks (WhatsApp, Email)
-│   │       └── settings.py   # Model selection API
-│   └── requirements.txt
-├── frontend/
-│   ├── index.html            # Single-page app (sidebar nav, 3 pages)
-│   ├── style.css             # Full styling with dark/light themes
-│   └── script.js             # API client & UI logic
-├── docs/
-│   └── architecture_proposal.md
-├── .env.example              # Environment variable template
-├── .gitignore
-├── requirements.txt          # Top-level dependency list
-└── README.md
-```
-
----
-
-## 🔧 Configuration
-
-| Variable | Description | Default |
-|---|---|---|
-| `GEMINI_API_KEY` | Google Gemini API key | — |
-| `GEMINI_MODEL` | Active Gemini model | `gemini-2.5-flash` |
-| `GOOGLE_CLIENT_ID` | Google OAuth client ID | — |
-| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret | — |
-| `SMTP_HOST` | SMTP server hostname | `smtp.gmail.com` |
-| `SMTP_PORT` | SMTP server port | `587` |
-| `SMTP_USER` | SMTP sender email | — |
-| `SMTP_PASS` | SMTP app password | — |
-| `WAHA_URL` | WAHA API base URL | `http://localhost:3000` |
-| `WAHA_API_KEY` | WAHA API key | — |
-| `WAHA_SESSION` | WAHA session name | `default` |
-| `DATABASE_URL` | SQLAlchemy database URL | `sqlite:///./data/sentinalgrid.db` |
-| `SECRET_KEY` | Secret for signing auth tokens | — |
-| `FRONTEND_URL` | Frontend URL (for CORS & OAuth redirect) | `http://localhost:8501` |
-| `CONFIDENCE_THRESHOLD` | Min confidence for auto-updating rows | `0.7` |
+| Domain | Method | Endpoint | Description |
+|---|---|---|---|
+| **Auth** | `GET` | `/auth/login` | Redirects to Google OAuth consent screen |
+| **Campaigns** | `POST` | `/campaigns` | Upload a dataset to create a new agentic campaign |
+| **Campaigns** | `POST` | `/campaigns/{id}/launch` | Trigger the AI drafting and message dispatch process |
+| **Reviews** | `GET` | `/campaigns/{id}/reviews` | Fetch low-confidence interactions for human review |
+| **Reviews** | `POST` | `/campaigns/{id}/rows/{row_id}/review` | Resolve an AI flagged message (Approve/Reject) |
+| **Webhooks** | `POST` | `/webhooks/whatsapp` | Registered endpoint for WAHA inbound messages |
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! Here's how to get started:
+We love contributions! If you'd like to improve SentinelGrid:
 
-1. **Fork** this repository
-2. **Create** a feature branch: `git checkout -b feature/amazing-feature`
-3. **Commit** your changes: `git commit -m 'Add amazing feature'`
-4. **Push** to the branch: `git push origin feature/amazing-feature`
-5. **Open** a Pull Request
-
----
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ## 📄 License
 
-This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
+Distributed under the MIT License. See `LICENSE` for more information.
 
 ---
-
-<p align="center">
-  Built with ❤️ using FastAPI, Google Gemini & WAHA
-</p>
+<div align="center">
+  <i>Built with ❤️ using FastAPI, Google Gemini & WAHA</i>
+</div>
