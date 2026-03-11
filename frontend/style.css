@@ -403,10 +403,25 @@ select {
     transition: all 0.2s ease;
 }
 
+select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url('data:image/svg+xml;utf8,<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>');
+    background-repeat: no-repeat;
+    background-position: right 2rem center;
+    background-size: 1.2rem;
+    padding-right: 3.5rem;
+}
+
 [data-theme="dark"] input[type="text"],
 [data-theme="dark"] textarea,
 [data-theme="dark"] select {
-    background: #0A0A0A;
+    background-color: #0A0A0A;
+}
+
+[data-theme="dark"] select {
+    background-image: url('data:image/svg+xml;utf8,<svg fill="none" stroke="%23F5F5F7" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>');
 }
 
 input:focus,
